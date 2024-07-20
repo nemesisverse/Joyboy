@@ -18,6 +18,8 @@ public class ThirdPersonMovement : MonoBehaviour
     public float verticalVel;
     private Vector3 moveVector;
 
+    private Plane playerPlane;
+
     public void PlayerMovement()
     {
         float horizontal = Input.GetAxis("Horizontal");
@@ -45,11 +47,18 @@ public class ThirdPersonMovement : MonoBehaviour
             // }
         }
     }
+
+    private void Start()
+    {
+        playerPlane = new Plane(Vector3.up, Vector3.zero);
+    }
+
     // Update is called once per frame
     void Update()
     {
       
         PlayerMovement();
+        LookMouse();
         isGrounded = controller.isGrounded;
         if (isGrounded)
         {
@@ -64,5 +73,31 @@ public class ThirdPersonMovement : MonoBehaviour
 
 
 
+    }
+    void LookMouse()
+    { // Get the ray from the camera to the mouse position
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        // Variable to store the distance from the ray origin to the intersection point
+        float hitDistance;
+
+        // Check if the ray intersects with the plane
+        if (playerPlane.Raycast(ray, out hitDistance))
+        {
+            // Get the intersection point
+            Vector3 targetPoint = ray.GetPoint(hitDistance);
+
+            // Calculate the direction from the player to the target point
+            Vector3 direction = targetPoint - transform.position;
+
+            // Set the y component to zero to keep the player facing on the XZ plane only
+            direction.y = 0;
+
+            // Calculate the rotation needed to look at the target point
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+
+            // Apply the rotation to the player instantly
+            transform.rotation = targetRotation;
+        }
     }
 }
